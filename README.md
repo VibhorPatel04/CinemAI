@@ -74,7 +74,9 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 # CinemaAI
 - create react app
 - configured Tailwind css
--
+- Header
+- Login Form
+- Sign up Form
 
 # Features
 - Login/Sign Up
