@@ -1,10 +1,21 @@
 import { useRef, useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
+} from "firebase/auth";
+import { auth } from "../utils/firebase";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const email = useRef(null);
   const password = useRef(null);
@@ -16,7 +27,7 @@ const Login = () => {
   const handleButtonClick = () => {
     // valid the form data
     // checkValidData(email, password);
-    
+
     let message = null;
     if (!isSignInForm && useName.current) {
       message = checkValidData(
@@ -33,7 +44,55 @@ const Login = () => {
     }
     setErrorMessage(message);
 
-    // sign in / sign up
+    if (message) return;
+
+    if (!isSignInForm) {
+      // sign up Logic
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          updateProfile(user, {
+            displayName: useName.current.value, photoURL: "https://avatars.githubusercontent.com/u/101581481?v=4"
+          }).then(() => {
+            // Profile updated!
+            const {uid, email, displayName, photoURL} = auth.currentUser;
+            dispatch(addUser({uid : uid, email : email, displayName: displayName, photoURL : photoURL}));
+            navigate("/browse");
+          }).catch((error) => {
+            // An error occurred
+            setErrorMessage(error.message);
+          });
+          
+          
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "-" + errorMessage);
+        });
+    } else {
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+          navigate("/browse");
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "-" + errorMessage);
+        });
+    }
   };
   return (
     <div className="h-screen w-full">
@@ -77,7 +136,7 @@ const Login = () => {
             className="mt-3 block w-72 bg-[rgba(22,22,22,0.7)] border-2 border-[rgba(128,128,128,0.7)] rounded text-white px-6 py-3 text-base hover:border-[#fff]  transition"
           />
           {errorMessage ? (
-            <p className="text-[rgb(229,9,20)] font-bold pt-3">
+            <p className="text-[rgb(229,9,20)] font-bold pt-3 w-72">
               {errorMessage}
             </p>
           ) : (

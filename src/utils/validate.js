@@ -5,7 +5,7 @@ export const checkValidData = (userName, email, password) => {
   
     if (userName && userName.trim() !== "") {
       // Validate name only if it exists and is not empty
-      isNameValid = /^[A-Za-z][A-Za-z0-9_]{7,29}$/.test(userName);
+      isNameValid = /^[A-Za-z]+(?: [A-Za-z]+)?(?: [A-Za-z]+)?$/.test(userName);
     }
   
     if (!isNameValid) return "Name is not valid";
