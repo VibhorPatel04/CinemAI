@@ -1,19 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { removeUser } from "../utils/userSlice";
+import {onAuthStateChanged} from "firebase/auth";
+import {addUser} from "../utils/userSlice";
+import {LOGO} from "../utils/constants"
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigator = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((store) => store.user);
+  useEffect(() => {
+    const unsubscibe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const { uid, email, displayName, photoURL } = user;
+        dispatch(
+          addUser({
+            uid: uid,
+            email: email,
+            displayName: displayName,
+            photoURL: photoURL,
+          })
+        );
+        navigator("/browse");
+      } else {
+        dispatch(removeUser());
+        navigator("/");
+      }
+    });
+    return () => unsubscibe();
+  }, []);
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
         dispatch(removeUser);
-        navigator("/");
       })
       .catch((error) => {
         navigator("/error");
@@ -24,22 +46,25 @@ const Header = () => {
     setIsOpen(!isOpen);
   };
   return (
-    <div className="absolute bg-gradient-to-b from-black z-10 w-screen flex justify-between px-10">
-      <img src="/logo.png" alt="logo" width="150" />
+    <div className="absolute bg-gradient-to-b from-black z-20 w-screen flex justify-between px-10">
+      <img src={LOGO} alt="logo" width="150" />
       <div className="pt-4">
         <div
           className="relative text-left flex items-center cursor-pointer"
           onClick={toggleDropdown}
         >
-          <img
-            src={user ? user?.photoURL : "/user-icon.png"}
-            width="40"
-            alt="user-icon"
-          />
-          {
-            user &&  <small className="text-white font-bold ps-2">({user?.displayName})</small>
-          }
-         
+          {user && (
+            <img
+              src={user.photoURL ? user?.photoURL : "/user-icon.png"}
+              width="40"
+              alt="user-icon"
+            />
+          )}
+          {user && (
+            <small className="text-white font-bold ps-2">
+              ({user.displayName ? user?.displayName : user.email.slice(0, 1)})
+            </small>
+          )}
 
           {user && (
             <svg
