@@ -46,7 +46,7 @@ const Header = () => {
     setIsOpen(!isOpen);
   };
   return (
-    <div className="absolute bg-gradient-to-b from-black z-20 w-screen flex justify-between px-10">
+    <div className="absolute bg-gradient-to-b from-black z-20 w-full flex justify-between px-10">
       <img src={LOGO} alt="logo" width="150" />
       <div className="pt-4">
         <div
