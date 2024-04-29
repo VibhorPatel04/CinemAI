@@ -1,14 +1,16 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { API_OPTIONS } from "../utils/constants";
 import { addTrailerVideo } from "../utils/moviesSlice";
 import { useEffect } from "react";
+import lang from "../utils/languageConstant";
 const useMoviesTrailer = (movieID) => {
     const dispatch = useDispatch();
+    const langKey = useSelector(store => store.config.lang)
     const getMovieVideos = async () => {
         const data = await fetch(
           "https://api.themoviedb.org/3/movie/" +
             movieID +
-            "/videos?language=en-US",
+            "/videos?" +lang[langKey].urlLang,
           API_OPTIONS
         );
         const json = await data.json();
